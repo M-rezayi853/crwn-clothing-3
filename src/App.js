@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Route, Switch } from 'react-router-dom';
 
 import Homepage from './pages/homepage/homepage';
@@ -7,29 +7,41 @@ import Header from './components/header/header';
 import SingInAndSignUp from './pages/sign-in-and-sign-up/sign-in-and-sign-up';
 import './App.css';
 
-import { auth } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 
 
 const App = props => {
   const [currentUser, setCurrentUser] = useState(null);
 
-  let unsubscribeFromAuth = null;
+  let unsubscribeFromAuth = useRef(null);
 
   useEffect (() => {
-    unsubscribeFromAuth = auth.onAuthStateChanged(user => {
-      setCurrentUser(user);
+    unsubscribeFromAuth.current = auth.onAuthStateChanged(async userAuth => {
+      // setCurrentUser(user);
+      // createUserProfileDocument(user);
 
-      console.log(user);
+      // console.log(user);
+
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
+
+        userRef.onSnapshot(snapShot => {
+          setCurrentUser({
+            id: snapShot.id,
+            ...snapShot.data()
+          })
+        })
+      } else {
+        setCurrentUser(userAuth);
+      }
 
       return unsubscribeFromAuth;
     })
   }, []);
 
-  // useEffect(() => {
-  //   console.log('will');
-  //   return unsubscribeFromAuth;
-  // }, []);
-
+  useEffect (() => {
+    console.log(currentUser);
+  }, [currentUser])
 
   return (
     <div>
