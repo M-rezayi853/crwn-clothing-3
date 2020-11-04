@@ -4,7 +4,7 @@ import FormInput from '../form-input/form-input';
 import CustomButton from '../custom-button/custom-button';
 import './sign-in.scss';
 
-import { signInWithGoogle } from '../../firebase/firebase.utils';
+import { signInWithGoogle, auth } from '../../firebase/firebase.utils';
 
 
 
@@ -14,11 +14,17 @@ const SignIn = props => {
         password: ""
     });
 
-    const handleSubmite = event => {
+    const handleSubmite = async event => {
         event.preventDefault();
 
-        setStste({email: ""});
-        setStste({password: ""});
+        const { email, password } = state;
+
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            setStste({email: "", password: ""});
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     const handleChage = event => {
